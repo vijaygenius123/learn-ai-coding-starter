@@ -54,6 +54,12 @@ def test_assignment_is_a_statement():
     assert isinstance(plain, Assign) and plain.operator.type is TokenType.EQUAL
 
 
+def test_variable_declarations_record_mutability():
+    mutable_decl, immutable_decl = parse_source("slop a = 1✨\nloadbearing b = 2✨")
+    assert isinstance(mutable_decl, VarDecl) and mutable_decl.mutable
+    assert isinstance(immutable_decl, VarDecl) and not immutable_decl.mutable
+
+
 def test_assignment_is_not_an_expression():
     with pytest.raises(SlopSyntaxError, match=r"expected '\)' after arguments, found '='"):
         parse_source("hallucinate(x = 1)✨")

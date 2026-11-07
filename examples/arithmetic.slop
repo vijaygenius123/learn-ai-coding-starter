@@ -1,0 +1,3 @@
+— Arithmetic operators respect precedence, so this prints 7.
+slop seven = 1 + 2 * 3✨
+hallucinate(seven)✨

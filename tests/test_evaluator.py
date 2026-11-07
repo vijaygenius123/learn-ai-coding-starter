@@ -19,6 +19,10 @@ def fails(source: str) -> str:
     ("expression", "expected"),
     [
         ("7 / 2", "3"),
+        ("-7 / 2", "-3"),
+        ("7 / -2", "-3"),
+        ("-7 / -2", "3"),
+        ("-1 / 2", "0"),
         ("2 - 3 * 4", "-10"),
         ("(2 - 3) * 4", "-4"),
         ("--5", "5"),
@@ -69,6 +73,45 @@ def test_assignment_walks_up_the_scope_chain():
 }
 hallucinate(x)✨"""
     assert run(source) == "2\n"
+
+
+def test_loadbearing_reads_but_cannot_be_reassigned():
+    source = """loadbearing LIMIT = 100✨
+hallucinate(LIMIT)✨
+LIMIT = 200✨"""
+    result = run_source(source)
+    assert result.stdout == "100\n"
+    assert result.stderr == (
+        "SlopLang runtime error at line 3: cannot assign to loadbearing 'LIMIT'\n"
+    )
+
+
+def test_loadbearing_assignment_walks_up_the_scope_chain():
+    source = """loadbearing LIMIT = 100✨
+{
+    LIMIT = 200✨
+}"""
+    assert fails(source) == (
+        "SlopLang runtime error at line 3: cannot assign to loadbearing 'LIMIT'"
+    )
+
+
+def test_loadbearing_can_be_shadowed_in_an_inner_scope():
+    source = """loadbearing LIMIT = 100✨
+{
+    loadbearing LIMIT = 200✨
+    hallucinate(LIMIT)✨
+}
+hallucinate(LIMIT)✨"""
+    assert run(source) == "200\n100\n"
+
+
+def test_loadbearing_cannot_be_redeclared_in_the_same_scope():
+    source = """loadbearing LIMIT = 1✨
+slop LIMIT = 2✨"""
+    assert fails(source) == (
+        "SlopLang runtime error at line 2: 'LIMIT' is already declared in this scope"
+    )
 
 
 def test_loop_body_is_a_fresh_scope_each_iteration():
@@ -134,6 +177,10 @@ def test_runtime_type_errors(source: str, message: str):
     assert fails(source) == f"SlopLang runtime error at line 1: {message}"
 
 
+def test_division_by_zero_is_a_runtime_error():
+    assert fails("hallucinate(1 / 0)✨") == "SlopLang runtime error at line 1: division by zero"
+
+
 def test_stringify_every_value_kind():
     source = """clanker f() { }
 hallucinate(0)✨
@@ -145,6 +192,28 @@ hallucinate(f())✨
 hallucinate(f)✨
 hallucinate(hallucinate)✨"""
     assert run(source) == "0\n-42\nstr\n✅\n❌\nnil\n<clanker f>\n<clanker hallucinate>\n"
+
+
+def test_hallucinate_prints_arguments_separated_by_spaces():
+    assert run("hallucinate(1, 2, 3)✨") == "1 2 3\n"
+
+
+def test_hallucinate_with_no_arguments_prints_a_blank_line():
+    assert run("hallucinate()✨") == "\n"
+
+
+def test_hallucinate_stringifies_each_argument():
+    source = """clanker f() { }
+hallucinate(“a”, 1, ✅, ❌, f(), f, hallucinate)✨"""
+    assert run(source) == "a 1 ✅ ❌ nil <clanker f> <clanker hallucinate>\n"
+
+
+def test_hallucinate_keeps_embedded_newlines_within_an_argument():
+    assert run("hallucinate(“a\\nb”, “c”)✨") == "a\nb c\n"
+
+
+def test_hallucinate_returns_nil():
+    assert run("hallucinate(hallucinate(1))✨") == "1\nnil\n"
 
 
 def test_variation_selector_after_emoji_is_accepted():

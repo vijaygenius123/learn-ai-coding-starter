@@ -6,6 +6,9 @@ Files use the `.slop` extension and run with:
 uv run sloperator.py path/to/program.slop
 ```
 
+Pass `--check` to validate a file's syntax without running it:
+`uv run sloperator.py --check path/to/program.slop`.
+
 ## Example
 
 ```slop
@@ -34,11 +37,12 @@ Prints `small slop` twice, then `big slop`.
 | SlopLang      | Conventional | Meaning                                                 |
 | ------------- | ------------ | ------------------------------------------------------- |
 | `slop`        | `let`        | Declare a mutable variable                              |
+| `loadbearing` | `const`      | Declare an immutable variable (initializer required)     |
 | `clanker`     | `fn`         | Define a function                                       |
 | `vibe`        | `if`         | Conditional                                             |
 | `nah`         | `else`       | Else branch                                             |
 | `ralph`       | `while`      | Loop while a condition is `✅`                          |
-| `hallucinate` | `print`      | Print one value, then a newline                         |
+| `hallucinate` | `print`      | Print values separated by spaces, then a newline        |
 | `ship`        | `return`     | Return one value from a function                        |
 | `✨`          | `;`          | Statement terminator (required)                         |
 | `—`           | `//`         | Start a line comment                                    |
@@ -70,18 +74,25 @@ No implicit conversions.
 
 ## Variables
 
-`slop` declares a mutable variable and requires an initializer. A scope cannot declare a name twice, but an inner block may shadow an outer name.
+`slop` declares a mutable variable and `loadbearing` declares an immutable one. Both require an initializer. A scope cannot declare a name twice, but an inner block may shadow an outer name.
 
 ```slop
 slop score = 10✨
-slop LIMIT = 100✨
+loadbearing LIMIT = 100✨
 score = score + 5✨
-score = score + 1✨
 ```
 
-Assignment is a statement, not an expression: `name = expression✨`. It updates the nearest existing `slop` variable. Reading or assigning an undefined name is a runtime error.
+Assignment is a statement, not an expression: `name = expression✨`. It updates the nearest existing `slop` variable. Reading or assigning an undefined name is a runtime error. Assigning to a `loadbearing` variable is a runtime error.
 
-Every brace block is a lexical scope. Assignment searches the current scope, then each enclosing scope.
+```slop
+slop score = 10✨
+loadbearing LIMIT = 100✨
+
+score = score + 1✨   — allowed
+LIMIT = 200✨         — runtime error: cannot assign to loadbearing 'LIMIT'
+```
+
+Every brace block is a lexical scope. Assignment searches the current scope, then each enclosing scope. `loadbearing` follows the same scoping rules as `slop`: it cannot be redeclared in the same scope, and an inner block may shadow it.
 
 ## Control Flow
 
@@ -120,10 +131,13 @@ Call depth is capped at 500 nested calls. Exceeding it is a runtime error (`stac
 
 ## Built-Ins
 
-`hallucinate(value)` is the only built-in. It accepts exactly one argument, prints it followed by a newline, and returns `nil`. Numbers print as base-10 digits, strings without quotes, booleans as `✅`/`❌`, nil as `nil`, and functions as `<clanker name>`.
+`hallucinate(value, ...)` is the only built-in. It accepts any number of arguments, prints them separated by single spaces followed by a newline, and returns `nil`. With no arguments it prints a blank line. Numbers print as base-10 digits, strings without quotes, booleans as `✅`/`❌`, nil as `nil`, and functions as `<clanker name>`.
 
 ```slop
-hallucinate(3)✨   — 3
+hallucinate(3)✨            — 3
+hallucinate(1, 2, 3)✨      — 1 2 3
+hallucinate(“a”, ✅, ❌)✨   — a ✅ ❌
+hallucinate()✨             — (blank line)
 ```
 
 ## Operators

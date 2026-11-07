@@ -47,8 +47,29 @@ def test_hallucinate_is_an_identifier_not_a_keyword():
     assert tokenize("hallucinate")[0].type is TokenType.IDENTIFIER
 
 
+def test_loadbearing_is_a_keyword():
+    assert tokenize("loadbearing")[0].type is TokenType.LOADBEARING
+
+
 def test_string_may_contain_em_dash_and_opening_quote():
     assert tokenize("“x — “y”")[0].literal == "x — “y"
+
+
+def test_tab_escape_produces_a_tab():
+    assert tokenize("“name\\tscore”")[0].literal == "name\tscore"
+
+
+@pytest.mark.parametrize(
+    ("source", "expected"),
+    [
+        ("“a\\nb”", "a\nb"),
+        ("“a\\tb”", "a\tb"),
+        ("“a\\”b”", "a”b"),
+        ("“a\\\\b”", "a\\b"),
+    ],
+)
+def test_string_escapes(source: str, expected: str):
+    assert tokenize(source)[0].literal == expected
 
 
 @pytest.mark.parametrize(
@@ -65,6 +86,8 @@ def test_string_may_contain_em_dash_and_opening_quote():
         ("“a\\", 1, "unterminated string"),
         ("a & b", 1, "unexpected character '&', did you mean '&&'?"),
         ("a | b", 1, "unexpected character '|', did you mean '||'?"),
+        ("a @ b", 1, "unexpected character '@'"),
+        ("— a comment\n@", 2, "unexpected character '@'"),
     ],
 )
 def test_lexical_errors(source: str, line: int, message: str):
@@ -73,3 +96,15 @@ def test_lexical_errors(source: str, line: int, message: str):
     assert info.value.line == line
     assert info.value.message == message
     assert str(info.value) == f"SlopLang lexical error at line {line}: {message}"
+
+
+def test_comment_ending_in_newline_advances_line():
+    with pytest.raises(LexicalError) as info:
+        tokenize("— a comment\n@")
+    assert info.value.line == 2
+
+
+def test_comment_at_end_of_file_does_not_advance_line():
+    tokens = tokenize("— a comment")
+    assert tokens[-1].type is TokenType.EOF
+    assert tokens[-1].line == 1
