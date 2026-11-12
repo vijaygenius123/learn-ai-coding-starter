@@ -20,12 +20,12 @@ CASES = [
         2,
         "expected ✨ after variable declaration, found 'slop'",
     ),
-    ("ship 1✨", "syntax", 1, "ship is only allowed inside a clanker"),
+    ("ship 1✨", "syntax", 1, "ship is only allowed inside a clanker, found 'ship'"),
     (
         "clanker outer() {\n    clanker inner() {\n    }\n}",
         "syntax",
         2,
-        "clanker declarations are only allowed at the top level",
+        "clanker declarations are only allowed at the top level, found 'clanker'",
     ),
     (
         "slop x✨",

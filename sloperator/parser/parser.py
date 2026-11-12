@@ -82,9 +82,7 @@ class Parser:
 
     def statement(self) -> Stmt:
         if self.check(TokenType.CLANKER):
-            raise SlopSyntaxError(
-                self.peek().line, "clanker declarations are only allowed at the top level"
-            )
+            raise self.error(self.peek(), "clanker declarations are only allowed at the top level")
         if self.match(TokenType.VIBE):
             return self.if_stmt()
         if self.match(TokenType.RALPH):
@@ -115,7 +113,7 @@ class Parser:
     def ship_stmt(self) -> Ship:
         keyword = self.previous()
         if self.function_depth == 0:
-            raise SlopSyntaxError(keyword.line, "ship is only allowed inside a clanker")
+            raise self.error(keyword, "ship is only allowed inside a clanker")
         value = self.expression()
         self.terminator("ship value")
         return Ship(keyword, value)
@@ -175,9 +173,6 @@ class Parser:
 
     def factor(self) -> Expr:
         expr = self.unary()
-        return self.factor_tail(expr)
-
-    def factor_tail(self, expr: Expr) -> Expr:
         while self.match(TokenType.STAR, TokenType.SLASH):
             expr = Binary(expr, self.previous(), self.unary())
         return expr

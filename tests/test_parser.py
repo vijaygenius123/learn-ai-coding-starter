@@ -86,8 +86,12 @@ def test_function_declaration():
 @pytest.mark.parametrize(
     ("source", "line", "message"),
     [
-        ("ship 1✨", 1, "ship is only allowed inside a clanker"),
-        ("{\n    clanker f() { }\n}", 2, "clanker declarations are only allowed at the top level"),
+        ("ship 1✨", 1, "ship is only allowed inside a clanker, found 'ship'"),
+        (
+            "{\n    clanker f() { }\n}",
+            2,
+            "clanker declarations are only allowed at the top level, found 'clanker'",
+        ),
         ("clanker f(a, a) { }", 1, "duplicate parameter name 'a'"),
         ("clanker f() { ship✨ }", 1, "expected an expression, found '✨'"),
         ("slop x = 1", 1, "expected ✨ after variable declaration, but reached end of file"),
