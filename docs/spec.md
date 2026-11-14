@@ -179,9 +179,9 @@ expressionStmt -> expression "✨" ;
 
 expression     -> logicOr ;
 logicOr        -> logicAnd ( "||" logicAnd )* ;
-logicAnd       -> equality ( "&&" equality )* ;
-equality       -> comparison ( ( "==" | "!=" ) comparison )* ;
-comparison     -> term ( ( "<" | "<=" | ">" | ">=" ) term )* ;
+logicAnd       -> comparison ( "&&" comparison )* ;
+comparison     -> equality ( ( "<" | "<=" | ">" | ">=" ) equality )* ;
+equality       -> term ( ( "==" | "!=" ) term )* ;
 term           -> factor ( ( "+" | "-" ) factor )* ;
 factor         -> unary ( ( "*" | "/" ) unary )* ;
 unary          -> "-" unary | call ;

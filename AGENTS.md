@@ -24,6 +24,7 @@ The `validate` skill (`.agents/skills/validate/SKILL.md`) runs pytest + ruff for
 Add a regression test whenever you fix a bug or change observable behavior — error messages, exit codes, precedence, or scanner edge cases. Put it where the behavior lives:
 
 - Parser and syntax-error messages → `tests/test_parser.py`; full end-to-end error text and exit codes → `tests/test_errors.py`.
+- Operator precedence → `tests/test_precedence.py` and `tests/test_comparisons.py`; run the focused comparison suite with `uv run pytest tests/test_comparisons.py -q`.
 - Scanner edge cases (smart quotes, emoji, variation selectors) → `tests/test_lexer_regression.py`.
 - Runtime semantics → `tests/test_evaluator.py`; CLI behavior → `tests/test_cli.py`.
 

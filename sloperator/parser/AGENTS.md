@@ -10,7 +10,7 @@ parses its whole rule and returns the AST node for it — no rule is split acros
 and no method parses two rules.
 
 - Recursive descent: a rule's method calls the methods of the rules it references, in
-  precedence order (`expression` → `logic_or` → `logic_and` → `comparison` → `equality`
+  precedence order (`expression` → `logic_or` → `logic_and` → `equality` → `comparison`
   → `term` → `factor` → `unary` → `call` → `primary`).
 - Left-associative loops (`while self.match(...)`) stay inside the rule's own method.
 - Helpers that are not grammar rules (`match`, `check`, `advance`, `peek`, `peek_next`,
