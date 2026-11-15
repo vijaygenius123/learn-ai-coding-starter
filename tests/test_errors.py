@@ -76,6 +76,13 @@ CASES = [
         1,
         "operands of '+' must both be numbers or both be strings, got string and number",
     ),
+    ("hallucinate(!1)✨", "runtime", 1, "operand of unary '!' must be a boolean, got number"),
+    (
+        "hallucinate(!“nope”)✨",
+        "runtime",
+        1,
+        "operand of unary '!' must be a boolean, got string",
+    ),
 ]
 
 
