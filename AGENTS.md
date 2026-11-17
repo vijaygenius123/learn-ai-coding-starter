@@ -19,6 +19,8 @@ uv run ty check                # type check
 
 The `validate` skill (`.agents/skills/validate/SKILL.md`) runs pytest + ruff format + ruff check.
 
+After any code change, run `uv run ruff format` to apply formatting before you finish.
+
 ## Regression tests
 
 Add a regression test whenever you fix a bug or change observable behavior — error messages, exit codes, precedence, or scanner edge cases. Put it where the behavior lives:
